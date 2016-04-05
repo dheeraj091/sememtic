@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 DeepMind : Teaching Machines to Read and Comprehend
 =========================================
 
@@ -123,3 +124,6 @@ We would like to thank the developers of Theano, Blocks and Fuel at MILA for the
 We thank Simon Lacoste-Julien from SIERRA team at INRIA, for providing us access to two Titan Black GPUs.
 
 
+=======
+# sememtic
+>>>>>>> 92ce5d758f5b9e10e3eafc9e606e6e9333265e0c
