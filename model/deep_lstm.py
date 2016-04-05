@@ -21,10 +21,12 @@ class Model():
 
 
         # set time as first dimension
+        # dheeraj: perhaps a transpose operation
         question = question.dimshuffle(1, 0)
         question_mask = question_mask.dimshuffle(1, 0)
 
         # Embed questions
+
         embed = LookupTable(vocab_size, config.embed_size, name='question_embed')
         bricks.append(embed)
         qembed = embed.apply(question)
@@ -34,6 +36,9 @@ class Model():
         curr_hidden = qembed
 
         hidden_list = []
+
+        # 4* dim is the four gates of the LSTM 
+        # for each of the apply, tmp takes the gates and apply to the next layer 
         for k, dim in enumerate(config.lstm_size):
             lstm_in = Linear(input_dim=curr_dim, output_dim=4*dim, name='lstm_in_%d'%k)
             lstm = LSTM(dim=dim, activation=Tanh(), name='lstm_%d'%k)
@@ -50,6 +55,12 @@ class Model():
                 curr_dim = dim
 
         # Create and apply output MLP
+        # config.skip_connections decides whether you need to sum the two LSTM layer output
+        # or take just the last layer output to softmaxs
+
+        # config.n_entities borrows from different config files 
+        # config.n_entities = 550 
+
         if config.skip_connections:
             out_mlp = MLP(dims=[sum(config.lstm_size)] + config.out_mlp_hidden + [config.n_entities],
                           activations=config.out_mlp_activations + [Identity()],
@@ -64,6 +75,11 @@ class Model():
             bricks.append(out_mlp)
 
             probs = out_mlp.apply(hidden_list[-1][-1,:,:])
+
+
+        # first line makes no sense - come back later
+        # probs - penalizes the bad scores with -1000 and keep the 
+        # correct answer from the MLP output
 
         is_candidate = tensor.eq(tensor.arange(config.n_entities, dtype='int32')[None, None, :],
                                  tensor.switch(candidates_mask, candidates, -tensor.ones_like(candidates))[:, :, None]).sum(axis=1)
